@@ -2,6 +2,10 @@ output "endpoint" {
   value = aws_db_instance.this.address
 }
 
+output "username" {
+  value = aws_db_instance.this.username
+}
+
 output "secret_arn" {
   description = "Secrets Manager secret holding the master password"
   value       = aws_db_instance.this.master_user_secret[0].secret_arn
