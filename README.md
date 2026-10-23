@@ -2,7 +2,7 @@
 
 A small AWS platform built entirely with Terraform and shipped through a pull-request pipeline. A containerised API runs on ECS Fargate in private subnets behind a load balancer, with a Postgres database in isolated subnets and no stored credentials anywhere.
 
-Everything in the stack was created, tested end to end, and destroyed through the pipeline. Estimated total cost of the build: under $0.50.
+Everything in the stack was created, tested end to end, and destroyed through the pipeline. Estimated total cost of the build: under $1.
 
 ## Architecture
 
@@ -42,7 +42,7 @@ flowchart LR
 | RDS Postgres with a managed password | `modules/database` | Built, tested, destroyed |
 | Interface endpoints for ECR, Logs, Secrets Manager | `modules/endpoints` | Built, tested, destroyed |
 | ALB and Fargate service | `modules/service` | Built, tested, destroyed |
-| Dashboard, alarms, SNS | planned | Next |
+| SNS email alerts, 4 CloudWatch alarms, overview dashboard | `modules/monitoring` | Built, tested, destroyed |
 
 ## Evidence
 
@@ -76,6 +76,21 @@ com.amazonaws.us-east-1.secretsmanager  Interface
 ~~~
 
 Pipeline timings: service apply 3m57s, and the destroy of 27 resources 5m47s.
+
+## Monitoring
+
+A `monitoring` module adds an SNS topic with an email subscription, four CloudWatch alarms and an overview dashboard, deployed through the same pipeline.
+
+| Alarm | Fires when |
+|---|---|
+| Unhealthy targets | any API target fails health checks for 2 minutes |
+| API 5xx | more than 5 server errors in 5 minutes |
+| ECS CPU | the service averages above 80 percent for 3 minutes |
+| RDS storage | free database storage drops below 2 GiB |
+
+The dashboard shows requests and errors, response time, healthy and unhealthy targets, ECS CPU and memory, and database CPU, connections and free storage.
+
+To test failure handling, I removed the database ingress rule by hand. The next pull request plan detected the drift (`1 to add`) and the pipeline repaired it in 25 seconds (incident 9).
 
 ## Security design
 
@@ -114,7 +129,7 @@ docs/              incident log, design decisions, IAM policies
 
 ## Incidents and decisions
 
-- [Incident log](docs/incident-log.md): 8 real problems, how each was found and fixed.
+- [Incident log](docs/incident-log.md): 9 real problems, how each was found and fixed.
 - [Design decisions](docs/decisions.md): why it is built this way and what I traded off.
 
 ## Known limitations
@@ -129,4 +144,4 @@ docs/              incident log, design decisions, IAM policies
 
 ## Next
 
-CloudWatch dashboard and alarms with SNS, autoscaling, HTTPS, a permissions boundary, and the same workload on Kubernetes.
+Autoscaling, HTTPS, a permissions boundary, and the same workload on EKS.
