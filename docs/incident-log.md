@@ -65,3 +65,11 @@ Problems hit while building this platform, how each was found, and what changed.
 - **Cause:** a rich-text editor saved the YAML file with changed formatting, which broke the workflow.
 - **Fix:** restored the file from `main` with `git checkout origin/main -- <file>`, made the 2-line change with `sed`, and confirmed the net diff was `2 insertions(+)` before pushing.
 - **Lesson:** compare the diff stat with the change you intended before pushing. Edit YAML with plain-text tools. A required check that never starts usually means the workflow file itself is broken.
+
+## 9. A manual firewall change was detected and repaired by the pipeline
+
+- **Symptom:** to test failure handling, I removed the database ingress rule by hand with the AWS CLI. Nothing in the code had changed.
+- **Diagnosis:** the plan on the next pull request refreshed state and reported `module.database.aws_vpc_security_group_ingress_rule.from_app will be created` and `Plan: 1 to add, 0 to change, 0 to destroy`. The read-only plan role was enough to see the drift.
+- **Cause:** a change made outside Terraform, so the real infrastructure no longer matched the state.
+- **Fix:** merged the pull request, and the apply recreated the rule in 25 seconds.
+- **Lesson:** drift shows up in the next plan, and the pipeline is the repair path. Recreating the rule by hand would have given it a new ID that Terraform's state does not know about, so the two would disagree again.
