@@ -50,3 +50,4 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot     = true
   deletion_protection     = false
 }
+# Postgres access is limited to the app tier.
