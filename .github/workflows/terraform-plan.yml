@@ -1,3 +1,4 @@
+
 name: terraform-plan
 
 on:
@@ -16,10 +17,12 @@ env:
 jobs:
   plan:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash
         working-directory: envs/dev
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,6 +51,8 @@ jobs:
       - name: Terraform plan
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_allowed_cidr: ${{ secrets.ALLOWED_CIDR }}
+          TF_VAR_image_tag: ${{ vars.IMAGE_TAG }}
         run: terraform plan -input=false -lock=false -no-color 2>&1 | tee plan.txt
 
       - name: Post plan to pull request
@@ -57,12 +62,22 @@ jobs:
           script: |
             const fs = require('fs');
             let body = 'No plan output was produced.';
-            try { body = fs.readFileSync('envs/dev/plan.txt', 'utf8'); } catch (e) {}
-            if (body.length > 60000) body = body.slice(0, 60000) + '\n... output truncated ...';
+
+            try {
+              body = fs.readFileSync('envs/dev/plan.txt', 'utf8');
+            } catch (e) {}
+
+            if (body.length > 60000) {
+              body = body.slice(0, 60000) +
+                '\n... output truncated ...';
+            }
+
             const fence = '`'.repeat(3);
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '### Terraform plan (dev)\n\n' + fence + '\n' + body + '\n' + fence
+              body: '### Terraform plan (dev)\n\n' +
+                fence + '\n' + body + '\n' + fence
             });
