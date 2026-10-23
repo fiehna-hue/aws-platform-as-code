@@ -7,5 +7,5 @@ variable "alert_email" {
 variable "monthly_budget_usd" {
   type        = string
   description = "Monthly cost budget in USD."
-  default     = "10"
+  default     = "15"
 }
