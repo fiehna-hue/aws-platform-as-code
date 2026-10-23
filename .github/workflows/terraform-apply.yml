@@ -52,4 +52,6 @@ jobs:
       - name: Terraform apply
         env:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_allowed_cidr: ${{ secrets.ALLOWED_CIDR }}
+          TF_VAR_image_tag: ${{ vars.IMAGE_TAG }}
         run: terraform apply -input=false -auto-approve
