@@ -41,3 +41,12 @@ Problems hit while building this platform, how each was found, and what changed.
 - **Cause:** a documentation example value was exported as a real variable.
 - **Fix:** set the correct address and applied. The variable is now marked sensitive and stored as a CI secret, so it never appears in plan comments.
 - **Lesson:** read the plan, and treat addresses and secrets as inputs, not code.
+
+
+## 6. Database apply failed on a missing Secrets Manager permission
+
+- **Symptom:** the pull request plan passed and was merged, then the apply failed after 30 seconds with `The user isn't authorized to create a secret in AWS Secrets Manager`.
+- **Diagnosis:** `gh run view --log-failed` showed the security groups, subnet group and ingress rule had been created, and only the database instance failed.
+- **Cause:** with `manage_master_user_password`, RDS creates the password secret using the caller's permissions, and the apply role had none for Secrets Manager. The read-only plan role cannot catch missing write permissions, so the pull request check was green.
+- **Fix:** added secret create, tag and delete permissions scoped to secrets named `rds!db-*`, plus KMS access limited to calls made through RDS and Secrets Manager, then reran only the failed job. Terraform resumed from saved state and created the one missing resource.
+- **Lesson:** a read-only plan role cannot predict missing write permissions, so the first apply of a new service type may need one round of widening. The partial failure left nothing half-built, because state records each resource as it completes.

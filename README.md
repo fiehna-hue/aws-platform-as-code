@@ -50,3 +50,5 @@ The foundation costs essentially nothing. A monthly budget with an alert at 80% 
 - No long-lived AWS keys in the repo or CI. The pipeline will authenticate with GitHub OIDC.
 - IAM roles created by this project are prefixed `platform-`, and the deploying user is limited to that prefix.
 - State and `.tfvars` files are git-ignored.- Pull requests run terraform plan with a read-only role, and the result is posted as a comment
+
+- The plan role is read-only, so the pull request check cannot detect missing write permissions. A first apply of a new resource type may fail once and need a policy widened. Reviewers get the plan, not a guarantee of apply success.
