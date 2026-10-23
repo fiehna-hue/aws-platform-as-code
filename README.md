@@ -9,7 +9,7 @@ This repo is being built in phases. The status below shows what is done and what
 | Phase | Scope | Status |
 |---|---|---|
 | 1. Foundation | Remote state in S3 with native locking, cost budget as code | Done |
-| 1. Foundation | Plan-on-pull-request pipeline with keyless AWS auth (OIDC) | Next |
+| 1. Foundation | Plan-on-pull-request pipeline with keyless AWS auth (OIDC) | Done |
 | 2. Platform | Private-subnet network, VPC endpoints, ECS Fargate service, RDS, as reusable modules | Planned |
 | 3. Operations | CloudWatch dashboard, alarms, SNS alerts, incident log | Planned |
 | 4. Polish | Architecture diagram, decision records, runbook, cost and teardown notes | Planned |
@@ -49,4 +49,4 @@ The foundation costs essentially nothing. A monthly budget with an alert at 80% 
 
 - No long-lived AWS keys in the repo or CI. The pipeline will authenticate with GitHub OIDC.
 - IAM roles created by this project are prefixed `platform-`, and the deploying user is limited to that prefix.
-- State and `.tfvars` files are git-ignored.
+- State and `.tfvars` files are git-ignored.- Pull requests run terraform plan with a read-only role, and the result is posted as a comment
