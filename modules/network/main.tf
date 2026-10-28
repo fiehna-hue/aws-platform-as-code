@@ -29,9 +29,10 @@ resource "aws_internet_gateway" "this" {
 resource "aws_subnet" "public" {
   count = var.az_count
 
-  vpc_id            = aws_vpc.this.id
-  availability_zone = local.azs[count.index]
-  cidr_block        = cidrsubnet(var.cidr, 8, count.index)
+  vpc_id                  = aws_vpc.this.id
+  availability_zone       = local.azs[count.index]
+  cidr_block              = cidrsubnet(var.cidr, 8, count.index)
+  map_public_ip_on_launch = var.map_public_ip_on_launch
 
   tags = {
     Name = "${var.name}-public-${local.azs[count.index]}"

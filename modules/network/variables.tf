@@ -14,3 +14,9 @@ variable "az_count" {
   description = "Number of availability zones to span."
   default     = 2
 }
+
+variable "map_public_ip_on_launch" {
+  type        = bool
+  description = "Give instances launched in public subnets a public IP automatically. Needed for EKS nodes in public subnets."
+  default     = false
+}
